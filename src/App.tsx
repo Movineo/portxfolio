@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, ExternalLink, ChevronDown, Code2, Terminal, Database, Shield, Award, BookOpen, Briefcase, GraduationCap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Github, Linkedin, Mail, ExternalLink, ChevronDown, Code2, Terminal, Database, Shield, Award, BookOpen, Briefcase, GraduationCap, Menu, X } from 'lucide-react';
 import Background3D from './components/Background3D';
 import AnimatedSection from './components/AnimatedSection';
 
@@ -9,6 +9,7 @@ function App() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('about');
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,6 +46,10 @@ function App() {
     }
   }, []);
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <>
       <Helmet>
@@ -56,6 +61,7 @@ function App() {
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href="https://movine.xyz" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Helmet>
 
       <Background3D />
@@ -64,23 +70,65 @@ function App() {
         {/* Navigation */}
         <nav className="fixed top-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm z-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center h-16 space-x-8">
-              {['about', 'skills', 'projects', 'achievements', 'contact'].map((section) => (
-                <motion.button
-                  key={section}
-                  onClick={() => scrollToSection(section)}
-                  className={`text-sm font-medium transition-colors hover:text-blue-400 ${
-                    activeSection === section ? 'text-blue-400' : 'text-gray-300'
-                  }`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label={`Navigate to ${section} section`}
-                >
-                  {section.charAt(0).toUpperCase() + section.slice(1)}
-                </motion.button>
-              ))}
+            <div className="flex items-center justify-between h-16">
+              {/* Mobile menu button */}
+              <button
+                onClick={toggleMobileMenu}
+                className="md:hidden p-2 rounded-md text-gray-300 hover:text-blue-400 focus:outline-none"
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-8">
+                {['about', 'skills', 'projects', 'achievements', 'contact'].map((section) => (
+                  <motion.button
+                    key={section}
+                    onClick={() => scrollToSection(section)}
+                    className={`text-sm font-medium transition-colors hover:text-blue-400 ${
+                      activeSection === section ? 'text-blue-400' : 'text-gray-300'
+                    }`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label={`Navigate to ${section} section`}
+                  >
+                    {section.charAt(0).toUpperCase() + section.slice(1)}
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Mobile Navigation */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="md:hidden bg-gray-900/95 backdrop-blur-sm"
+              >
+                <div className="px-4 py-2 space-y-2">
+                  {['about', 'skills', 'projects', 'achievements', 'contact'].map((section) => (
+                    <motion.button
+                      key={section}
+                      onClick={() => {
+                        scrollToSection(section);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        activeSection === section ? 'text-blue-400 bg-blue-400/10' : 'text-gray-300 hover:bg-gray-800'
+                      }`}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {section.charAt(0).toUpperCase() + section.slice(1)}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </nav>
 
         {/* Hero Section */}
@@ -95,7 +143,7 @@ function App() {
           <AnimatedSection className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div className="text-center mb-16">
               <motion.h1 
-                className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text"
+                className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -103,7 +151,7 @@ function App() {
                 Movine Odhiambo
               </motion.h1>
               <motion.p 
-                className="text-xl md:text-2xl text-gray-300 mb-8"
+                className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 px-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
@@ -144,15 +192,14 @@ function App() {
               </motion.div>
             </div>
 
-            {/* Rest of the sections with AnimatedSection wrapper */}
             {/* Education Section */}
             <AnimatedSection className="mb-20">
-              <div className="bg-gray-800/30 p-8 rounded-lg backdrop-blur-sm">
+              <div className="bg-gray-800/30 p-4 sm:p-8 rounded-lg backdrop-blur-sm">
                 <div className="flex items-center mb-6">
                   <GraduationCap className="w-8 h-8 text-blue-400 mr-4" />
                   <h2 className="text-2xl font-bold">Education</h2>
                 </div>
-                <div className="ml-12">
+                <div className="ml-0 sm:ml-12">
                   <h3 className="text-xl font-semibold text-blue-400">B.Sc. Mathematics & Computer Science</h3>
                   <p className="text-gray-300">Jomo Kenyatta University of Agriculture and Technology</p>
                   <p className="text-gray-400 mt-2">Relevant Coursework:</p>
@@ -166,7 +213,7 @@ function App() {
             </AnimatedSection>
 
             {/* Skills Section */}
-            <div id="skills" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+            <div id="skills" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 mb-20">
               {[
                 {
                   icon: <Code2 className="w-12 h-12 mb-4 text-blue-400" />,
@@ -191,7 +238,7 @@ function App() {
               ].map((skill, index) => (
                 <AnimatedSection key={skill.title}>
                   <motion.div
-                    className="bg-gray-800/50 p-6 rounded-lg backdrop-blur-sm hover:transform hover:-translate-y-2 transition-all"
+                    className="bg-gray-800/50 p-4 sm:p-6 rounded-lg backdrop-blur-sm hover:transform hover:-translate-y-2 transition-all"
                     whileHover={{ scale: 1.05 }}
                   >
                     {skill.icon}

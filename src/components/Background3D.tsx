@@ -17,11 +17,20 @@ function Background3D() {
 
   return (
     <div className="fixed top-0 left-0 w-full h-full -z-10">
-      <Canvas camera={{ position: [0, 0, 5] }}>
+      <Canvas 
+        camera={{ position: [0, 0, 5] }}
+        style={{ touchAction: 'none' }}
+      >
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
         <Points positions={positions} />
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} />
+        <OrbitControls 
+          enableZoom={false} 
+          autoRotate 
+          autoRotateSpeed={0.5}
+          enablePan={false}
+          enableRotate={false}
+        />
       </Canvas>
     </div>
   );
