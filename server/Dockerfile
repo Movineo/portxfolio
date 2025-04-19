@@ -4,12 +4,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --production
+RUN npm install
 
 COPY . .
 
 ENV NODE_ENV=production
+ENV PORT=3001
 
 EXPOSE 3001
 
-CMD ["node", "index.js"] 
+CMD ["npm", "start"] 
