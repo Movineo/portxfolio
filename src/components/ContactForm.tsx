@@ -37,12 +37,12 @@ const ContactForm: React.FC<ContactFormProps> = ({ isDarkMode }) => {
     setStatus('submitting');
     try {
       // Initialize EmailJS with your public key
-      emailjs.init(process.env.REACT_APP_EMAILJS_PUBLIC_KEY || '');
+      emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '');
 
       // Send email using EmailJS
       await emailjs.send(
-        process.env.REACT_APP_EMAILJS_SERVICE_ID || '', // Email service ID
-        process.env.REACT_APP_EMAILJS_TEMPLATE_ID || '', // Email template ID
+        import.meta.env.VITE_EMAILJS_SERVICE_ID || '', // Email service ID
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '', // Email template ID
         {
           to_email: 'movineee@gmail.com',
           from_name: formData.name,
