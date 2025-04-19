@@ -95,87 +95,106 @@ function generatePortfolioResponse(message) {
   
   // Common greetings with context
   if (lowerMessage.match(/^(hi|hello|hey|greetings)/)) {
-    return `Hello! I'm Movine's portfolio assistant. I can help you learn about:\n\n` +
-           `• Skills & Technologies\n` +
-           `• Projects & Work Experience\n` +
-           `• Education & Background\n` +
-           `• Contact Information\n\n` +
-           `What would you like to know?`;
+    return `Hello! 👋 I'm Movine's portfolio assistant. I'm excited to help you learn about:\n\n` +
+           `🔹 Skills & Technologies\n` +
+           `🔹 Projects & Work Experience\n` +
+           `🔹 Education & Background\n` +
+           `🔹 Contact Information\n\n` +
+           `What interests you the most? I'd love to share more details! 😊`;
   }
 
   // Name/Identity related queries
   if (lowerMessage.includes('movine') || lowerMessage.includes('who') || lowerMessage.includes('your name')) {
-    return `Movine Odhiambo is a Full-Stack Developer specializing in creating cutting-edge web applications. He has expertise in:\n\n` +
-           `• Frontend: React, JavaScript (ES6+), HTML5, CSS3\n` +
-           `• Backend: Node.js, Express.js, Spring Boot\n` +
-           `• Database: PostgreSQL, MySQL\n\n` +
-           `He graduated with a B.Sc. in Mathematics & Computer Science from JKUAT and has worked on several notable projects including an Event Management System and a Developer Portfolio Platform.`;
+    return `🌟 Let me introduce you to Movine Odhiambo!\n\n` +
+           `He's a passionate Full-Stack Developer who loves creating cutting-edge web applications. Here's what makes him stand out:\n\n` +
+           `💻 Frontend Expertise:\n` +
+           `• React & Modern JavaScript\n` +
+           `• Responsive Design\n` +
+           `• User Experience Focus\n\n` +
+           `🛠️ Backend Mastery:\n` +
+           `• Node.js & Express.js\n` +
+           `• Spring Boot\n` +
+           `• Database Architecture\n\n` +
+           `🎓 Education:\n` +
+           `B.Sc. in Mathematics & Computer Science from JKUAT\n\n` +
+           `Would you like to know more about his projects or specific skills? Just ask! 😊`;
   }
 
   // Privacy/Security related queries
   if (lowerMessage.includes('read this') || lowerMessage.includes('private') || lowerMessage.includes('secure')) {
-    return `This is a public portfolio website, and our conversation is private to this session. I'm here to help you learn about Movine's work and experience. How can I assist you?`;
+    return `🔒 Rest assured, our conversation is private to this session. I'm here to help you learn about Movine's professional journey and expertise.\n\n` +
+           `Feel free to ask anything about his work, skills, or achievements! What would you like to know? 😊`;
   }
 
   // Skills related queries
   if (lowerMessage.includes('skills') || lowerMessage.includes('technologies') || lowerMessage.includes('tech stack')) {
-    return `Movine is proficient in:\n\n` +
-           `Frontend:\n${portfolioInfo.skills.frontend.join(', ')}\n\n` +
-           `Backend:\n${portfolioInfo.skills.backend.join(', ')}\n\n` +
-           `Database:\n${portfolioInfo.skills.database.join(', ')}\n\n` +
-           `Security:\n${portfolioInfo.skills.security.join(', ')}`;
+    return `🚀 Here's Movine's impressive tech arsenal:\n\n` +
+           `💻 Frontend Mastery:\n${portfolioInfo.skills.frontend.join(', ')}\n\n` +
+           `⚙️ Backend Expertise:\n${portfolioInfo.skills.backend.join(', ')}\n\n` +
+           `🗄️ Database Proficiency:\n${portfolioInfo.skills.database.join(', ')}\n\n` +
+           `🔐 Security Implementation:\n${portfolioInfo.skills.security.join(', ')}\n\n` +
+           `Want to know how he applies these skills in real projects? Just ask! 🎯`;
   }
 
   // Project related queries
   if (lowerMessage.includes('project') || lowerMessage.includes('work') || lowerMessage.includes('portfolio')) {
-    return `Here are Movine's notable projects:\n\n` +
+    return `🎯 Check out these exciting projects by Movine:\n\n` +
            portfolioInfo.projects.map(project => 
-             `${project.title}:\n${project.description}\nTechnologies: ${project.technologies.join(', ')}`
-           ).join('\n\n');
+             `🌟 ${project.title}:\n` +
+             `${project.description}\n` +
+             `🛠️ Technologies: ${project.technologies.join(', ')}`
+           ).join('\n\n') +
+           '\n\nWould you like more details about any specific project? 😊';
   }
 
   // Contact information queries
   if (lowerMessage.includes('contact') || lowerMessage.includes('email') || lowerMessage.includes('reach')) {
-    return `You can reach Movine through:\n\n` +
-           `• Email: ${portfolioInfo.contact.email}\n` +
-           `• GitHub: ${portfolioInfo.contact.github}\n` +
-           `• LinkedIn: ${portfolioInfo.contact.linkedin}`;
+    return `📬 Here's how you can connect with Movine:\n\n` +
+           `📧 Email: ${portfolioInfo.contact.email}\n` +
+           `💻 GitHub: ${portfolioInfo.contact.github}\n` +
+           `🔗 LinkedIn: ${portfolioInfo.contact.linkedin}\n\n` +
+           `Feel free to reach out - he's always excited to discuss new opportunities and ideas! 🤝`;
   }
 
   // Education related queries
   if (lowerMessage.includes('education') || lowerMessage.includes('study') || lowerMessage.includes('degree')) {
-    return `Movine has a ${portfolioInfo.owner.education}. His coursework included:\n\n` +
-           `• Data Structures & Algorithms\n` +
-           `• Database Systems\n` +
-           `• Web Development`;
+    return `🎓 Educational Background:\n\n` +
+           `Movine holds a ${portfolioInfo.owner.education}\n\n` +
+           `📚 Key Areas of Study:\n` +
+           `• 🔍 Data Structures & Algorithms\n` +
+           `• 💾 Database Systems\n` +
+           `• 🌐 Web Development\n\n` +
+           `Want to know how he applies this knowledge in real-world projects? Just ask! 💡`;
   }
 
   // Background/About queries
   if (lowerMessage.includes('about') || lowerMessage.includes('background') || lowerMessage.includes('experience')) {
-    return `Movine Odhiambo is a ${portfolioInfo.owner.title} with expertise in both frontend and backend development. His achievements include:\n\n` +
-           `• Ranked in top 10% in university programming competitions\n` +
-           `• Completed 50+ hours of specialized backend development training\n` +
-           `• Maintains 100% code review approval rate\n\n` +
-           `Would you like to know more about his skills, projects, or how to get in touch?`;
+    return `🌟 About Movine Odhiambo:\n\n` +
+           `He's a ${portfolioInfo.owner.title} with a passion for creating innovative solutions. Here are some highlights:\n\n` +
+           `🏆 Achievements:\n` +
+           `• 🎯 Top 10% in university programming competitions\n` +
+           `• 📚 50+ hours of specialized backend development training\n` +
+           `• ✨ 100% code review approval rate\n\n` +
+           `Would you like to know more about his skills, projects, or how to get in touch? 😊`;
   }
 
   // Lost/Confused queries
   if (lowerMessage.includes('lost') || lowerMessage.includes('help') || lowerMessage.includes('confused')) {
-    return `I'm here to help! I can tell you about:\n\n` +
-           `• Movine's skills and technologies\n` +
-           `• His projects and work experience\n` +
-           `• His education and background\n` +
-           `• How to contact him\n\n` +
-           `What would you like to know more about?`;
+    return `🤝 No worries! I'm here to help. Let me guide you through what I can tell you about:\n\n` +
+           `💻 Technical Skills & Expertise\n` +
+           `🚀 Exciting Projects & Achievements\n` +
+           `🎓 Education & Background\n` +
+           `📬 Contact Information\n\n` +
+           `What would you like to explore first? 😊`;
   }
 
   // Default response for unrecognized queries
-  return `I'm here to help you learn about Movine's work and experience. You can ask about:\n\n` +
-         `• His technical skills\n` +
-         `• Projects he's worked on\n` +
-         `• His education and background\n` +
-         `• How to contact him\n\n` +
-         `What would you like to know?`;
+  return `👋 I'd love to tell you more about Movine! You can ask about:\n\n` +
+         `💻 His technical expertise\n` +
+         `🚀 Projects he's worked on\n` +
+         `🎓 Education and background\n` +
+         `📬 How to get in touch\n\n` +
+         `What would you like to know more about? I'm here to help! 😊`;
 }
 
 app.post('/api/chat', async (req, res) => {

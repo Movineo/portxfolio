@@ -11,6 +11,22 @@ interface ChatBotProps {
   isDarkMode: boolean;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const WELCOME_MESSAGE = `Hello! 👋 I'm Movine's portfolio assistant. I'm here to help you learn about:\n\n` +
+                       `🔹 Skills & Technologies\n` +
+                       `🔹 Projects & Work Experience\n` +
+                       `🔹 Education & Background\n` +
+                       `🔹 Contact Information\n\n` +
+                       `What would you like to know? You can click on the suggested topics below or ask your own question!`;
+
+const SUGGESTED_QUERIES = [
+  "What are your technical skills?",
+  "Tell me about your latest projects",
+  "What's your background?",
+  "How can I contact you?"
+];
+
 const ChatBot: React.FC<ChatBotProps> = ({ isDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -18,6 +34,13 @@ const ChatBot: React.FC<ChatBotProps> = ({ isDarkMode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Initialize with welcome message
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{ text: WELCOME_MESSAGE, isBot: true }]);
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,21 +60,36 @@ const ChatBot: React.FC<ChatBotProps> = ({ isDarkMode }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ message: userMessage }),
       });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
 
       const data = await response.json();
       setMessages(prev => [...prev, { text: data.response, isBot: true }]);
     } catch (error) {
+      console.error('Chat error:', error);
       setMessages(prev => [...prev, { 
-        text: 'Sorry, I encountered an error. Please try again.',
+        text: 'I apologize, but I encountered a connection error. Please try again in a moment.',
         isBot: true 
       }]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSuggestedQuery = (query: string) => {
+    if (!isLoading) {
+      setMessage(query);
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
     }
   };
 
@@ -155,6 +193,33 @@ const ChatBot: React.FC<ChatBotProps> = ({ isDarkMode }) => {
               )}
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Suggested Queries - Show only after welcome message */}
+            {messages.length === 1 && (
+              <div className={`
+                p-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}
+                flex flex-wrap gap-2
+              `}>
+                {SUGGESTED_QUERIES.map((query, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestedQuery(query)}
+                    disabled={isLoading}
+                    className={`
+                      px-3 py-1 rounded-full text-sm
+                      ${isDarkMode 
+                        ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                      }
+                      transition-colors duration-200
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                    `}
+                  >
+                    {query}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input */}
             <form 
