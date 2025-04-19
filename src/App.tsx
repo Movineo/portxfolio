@@ -316,7 +316,7 @@ function App() {
 
             {/* GitHub Contributions Section */}
             <div className="mb-20">
-              <GitHubContributions isDarkMode={isDarkMode} username="your-github-username" />
+              <GitHubContributions isDarkMode={isDarkMode} username="Movineo" />
             </div>
 
             {/* Achievements Section */}

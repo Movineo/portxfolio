@@ -23,7 +23,7 @@ interface GitHubContributionsProps {
 const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, username }) => {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [repositories, setRepositories] = useState<Repository[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalContributions: 0,
@@ -34,7 +34,8 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        setLoading(true);
+        setIsLoading(true);
+        setError(null);
         
         // Fetch user's repositories
         const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=3`);
@@ -49,26 +50,30 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
           url: repo.html_url,
         }));
 
-        // Fetch user's events (contributions)
+        // Fetch the last year of contributions
         const eventsResponse = await fetch(`https://api.github.com/users/${username}/events/public`);
-        if (!eventsResponse.ok) throw new Error('Failed to fetch contributions');
-        const eventsData = await eventsResponse.json();
+        if (!eventsResponse.ok) {
+          throw new Error('Failed to fetch GitHub contributions');
+        }
 
-        // Process events into daily contributions
+        const events = await eventsResponse.json();
+        
+        // Process events to count contributions
         const contributionMap = new Map<string, number>();
         const today = new Date();
-        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
 
-        // Initialize all days with 0 contributions
-        for (let d = new Date(thirtyDaysAgo); d <= today; d.setDate(d.getDate() + 1)) {
+        // Initialize all dates in the last year with 0 contributions
+        for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
           contributionMap.set(d.toISOString().split('T')[0], 0);
         }
 
         // Count contributions from events
-        eventsData.forEach((event: any) => {
+        events.forEach((event: any) => {
           const date = event.created_at.split('T')[0];
-          if (contributionMap.has(date)) {
-            contributionMap.set(date, (contributionMap.get(date) || 0) + 1);
+          if (new Date(date) >= oneYearAgo) {
+            const currentCount = contributionMap.get(date) || 0;
+            contributionMap.set(date, currentCount + 1);
           }
         });
 
@@ -98,12 +103,11 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
           streak: maxStreak,
           repositories: reposData.length,
         });
-        setLoading(false);
-        setError(null);
       } catch (err) {
         console.error('Error fetching GitHub data:', err);
         setError('Failed to load GitHub data');
-        setLoading(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -112,28 +116,40 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
     }
   }, [username]);
 
-  const getContributionColor = (count: number) => {
-    if (count === 0) return isDarkMode ? 'bg-gray-800' : 'bg-gray-100';
-    if (count < 3) return isDarkMode ? 'bg-green-900/70' : 'bg-green-100';
-    if (count < 6) return isDarkMode ? 'bg-green-700/70' : 'bg-green-300';
-    if (count < 9) return isDarkMode ? 'bg-green-500/70' : 'bg-green-500';
-    return isDarkMode ? 'bg-green-300/70' : 'bg-green-700';
+  const getContributionColor = (count: number): string => {
+    if (isDarkMode) {
+      if (count === 0) return 'bg-gray-800';
+      if (count <= 2) return 'bg-green-900';
+      if (count <= 4) return 'bg-green-700';
+      if (count <= 6) return 'bg-green-500';
+      return 'bg-green-300';
+    } else {
+      if (count === 0) return 'bg-gray-100';
+      if (count <= 2) return 'bg-green-200';
+      if (count <= 4) return 'bg-green-400';
+      if (count <= 6) return 'bg-green-600';
+      return 'bg-green-800';
+    }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} backdrop-blur-sm`}>
+        <div className="flex items-center justify-center space-x-2">
+          <Github className="animate-spin" />
+          <span>Loading contributions...</span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`text-center p-4 rounded-lg ${
-        isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'
-      }`}>
-        <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{error}</p>
+      <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} backdrop-blur-sm`}>
+        <div className="flex items-center justify-center space-x-2 text-red-500">
+          <Github />
+          <span>{error}</span>
+        </div>
       </div>
     );
   }
@@ -142,9 +158,7 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-6 rounded-lg ${
-        isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'
-      } backdrop-blur-sm`}
+      className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} backdrop-blur-sm`}
     >
       <div className="flex items-center gap-2 mb-6">
         <Github className={isDarkMode ? 'text-white' : 'text-gray-900'} size={24} />
@@ -191,33 +205,29 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
 
       {/* Contribution Graph */}
       <div className="mb-6">
-        <div className="grid grid-cols-7 gap-1">
-          {contributions.map((contribution, index) => (
-            <motion.div
-              key={contribution.date}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.02 }}
-              className={`aspect-square rounded-sm ${getContributionColor(contribution.count)} hover:ring-2 hover:ring-blue-500 transition-all cursor-help`}
-              title={`${contribution.count} contributions on ${new Date(contribution.date).toLocaleDateString()}`}
-            />
-          ))}
-        </div>
-        <div className="flex items-center justify-between mt-4 text-sm">
-          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-            Less
-          </span>
-          <div className="flex gap-1">
-            {[0, 3, 6, 9].map((count) => (
-              <div
-                key={count}
-                className={`w-3 h-3 rounded-sm ${getContributionColor(count)}`}
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-52 gap-1">
+            {contributions.map((contribution, index) => (
+              <motion.div
+                key={contribution.date}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: index * 0.005 }}
+                className={`w-3 h-3 rounded-sm ${getContributionColor(contribution.count)}`}
+                title={`${contribution.count} contributions on ${contribution.date}`}
               />
             ))}
           </div>
-          <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-            More
-          </span>
+        </div>
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Less</span>
+          {[0, 2, 4, 6, 8].map((count) => (
+            <div
+              key={count}
+              className={`w-3 h-3 rounded-sm ${getContributionColor(count)}`}
+            />
+          ))}
+          <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>More</span>
         </div>
       </div>
 

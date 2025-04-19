@@ -45,7 +45,7 @@ const portfolioInfo = {
   contact: {
     email: "movineee@gmail.com",
     github: "https://github.com/Movineo",
-    linkedin: "https://linkedin.com/in/movine-odhiambo"
+    linkedin: "https://www.linkedin.com/in/movine-odhiambo-5b4b5935a"
   }
 };
 
