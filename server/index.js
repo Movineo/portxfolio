@@ -51,7 +51,7 @@ const portfolioInfo = {
 
 // CORS configuration
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://movinetr.xyz', 'https://www.movinetr.xyz']
+  ? ['https://movinetr.xyz', 'https://www.movinetr.xyz', 'https://movineo.github.io']
   : ['http://localhost:5173', 'http://localhost:3000'];
 
 app.use(cors({
@@ -60,6 +60,7 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
+      console.log('Blocked origin:', origin);
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
     }
@@ -257,6 +258,19 @@ app.post('/api/chat', async (req, res) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    environment: process.env.NODE_ENV,
+    endpoints: {
+      health: '/health',
+      chat: '/api/chat'
+    },
+    message: 'Portfolio backend server is running'
+  });
 });
 
 // Error handling middleware
