@@ -75,8 +75,24 @@ function App() {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      element.focus();
+      // Add offset for the fixed header
+      const headerOffset = 80; // Height of the fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      // Close mobile menu after navigation
+      setIsMobileMenuOpen(false);
+      
+      // Set focus after scrolling is complete
+      setTimeout(() => {
+        element.focus();
+        element.setAttribute('tabindex', '-1');
+      }, 1000);
     }
   }, []);
 
@@ -160,7 +176,7 @@ function App() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className={`md:hidden ${isDarkMode ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-sm`}
+                className={`md:hidden fixed w-full ${isDarkMode ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-sm z-50`}
                 id="mobile-menu"
                 role="navigation"
                 aria-label="Mobile menu"
@@ -169,10 +185,7 @@ function App() {
                   {['about', 'skills', 'projects', 'achievements', 'contact'].map((section) => (
                     <motion.button
                       key={section}
-                      onClick={() => {
-                        scrollToSection(section);
-                        setIsMobileMenuOpen(false);
-                      }}
+                      onClick={() => scrollToSection(section)}
                       className={`w-full text-left px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                         activeSection === section 
                           ? isDarkMode ? 'text-blue-400 bg-blue-400/10' : 'text-blue-600 bg-blue-600/10'
