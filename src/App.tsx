@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Github, Linkedin, Mail, ExternalLink, ChevronDown, Code2, Terminal, Database, Shield, Award, BookOpen, Briefcase, GraduationCap, Menu, X, Sun, Moon } from 'lucide-react';
+import { Github, Linkedin, Mail, ChevronDown, Terminal, Database, Shield, Award, BookOpen, Briefcase, GraduationCap, Menu, X, Sun, Moon } from 'lucide-react';
 import Background3D from './components/Background3D';
 import AnimatedSection from './components/AnimatedSection';
 import LazyImage from './components/LazyImage';
@@ -9,7 +9,6 @@ import SkillsProgress from './components/SkillsProgress';
 import GitHubContributions from './components/GitHubContributions';
 import ChatBot from './components/ChatBot';
 import ContactForm from './components/ContactForm';
-import BlogSection from './components/BlogSection';
 
 function App() {
   const [isVisible, setIsVisible] = useState(false);
@@ -108,18 +107,18 @@ function App() {
   return (
     <>
       <Helmet>
-        <title>Movine Odhiambo - Innovative Full-Stack Developer</title>
-        <meta name="description" content="Award-winning Full-Stack Developer specializing in creating cutting-edge web applications with modern technologies and exceptional user experiences." />
-        <meta name="keywords" content="Movine Odhiambo, Full-Stack Developer, React, Node.js, Three.js, Web Development, Portfolio" />
-        <meta property="og:title" content="Movine Odhiambo - Innovative Full-Stack Developer" />
-        <meta property="og:description" content="Award-winning Full-Stack Developer crafting next-generation web experiences" />
+        <title>Movine Odhiambo - Innovative Backend Developer</title>
+        <meta name="description" content="Award-winning Backend Developer specializing in scalable APIs, databases, and secure server-side solutions with modern technologies." />
+        <meta name="keywords" content="Movine Odhiambo, Backend Developer, Node.js, Express, Spring Boot, PostgreSQL, API, Security, Portfolio" />
+        <meta property="og:title" content="Movine Odhiambo - Innovative Backend Developer" />
+        <meta property="og:description" content="Award-winning Backend Developer crafting robust and secure server-side solutions" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href="https://movine.xyz" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Helmet>
 
-      <Background3D />
+      <Background3D isDarkMode={false} />
 
       <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900/90 to-black/90' : 'bg-gradient-to-br from-gray-50 to-white'} text-${isDarkMode ? 'white' : 'gray-900'} relative`}>
         {/* Navigation */}
@@ -233,7 +232,7 @@ function App() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                Full-Stack Developer | Problem Solver | Innovation Enthusiast
+                Backend Developer | API Specialist | Security & Database Enthusiast
               </motion.p>
               <motion.div 
                 className="flex justify-center gap-6 mb-12"
@@ -290,37 +289,38 @@ function App() {
             </AnimatedSection>
 
             {/* Skills Section */}
-            <div id="skills" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 mb-20">
-              {[
-                {
-                  icon: <Code2 className={`w-12 h-12 mb-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />,
-                  title: "Frontend",
-                  skills: "HTML5, CSS3, JavaScript (ES6+), React"
-                },
+            <div id="skills" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-20">
+              {[ 
                 {
                   icon: <Terminal className={`w-12 h-12 mb-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />,
                   title: "Backend",
-                  skills: "Node.js, Express.js, Spring Boot"
+                  skills: ["Node.js", "Express.js", "Spring Boot", "REST APIs", "GraphQL"]
                 },
                 {
                   icon: <Database className={`w-12 h-12 mb-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />,
                   title: "Database",
-                  skills: "PostgreSQL, MySQL, ORM Patterns"
+                  skills: ["PostgreSQL", "MySQL", "MongoDB", "ORM Patterns", "Prisma"]
                 },
                 {
                   icon: <Shield className={`w-12 h-12 mb-4 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />,
                   title: "Security",
-                  skills: "JWT Auth, Role-Based Access"
+                  skills: ["JWT Auth", "OAuth2", "Role-Based Access", "OWASP", "HTTPS"]
                 }
-              ].map((skill, index) => (
+              ].map((skill) => (
                 <AnimatedSection key={skill.title}>
                   <motion.div
                     className={`${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'} p-4 sm:p-6 rounded-lg backdrop-blur-sm hover:transform hover:-translate-y-2 transition-all`}
                     whileHover={{ scale: 1.05 }}
+                    tabIndex={0}
+                    aria-label={skill.title + ' skills'}
                   >
                     {skill.icon}
                     <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{skill.title}</h3>
-                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{skill.skills}</p>
+                    <ul className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+                      {skill.skills.map((s) => (
+                        <li key={s} className="list-disc list-inside ml-4">{s}</li>
+                      ))}
+                    </ul>
                   </motion.div>
                 </AnimatedSection>
               ))}
@@ -352,7 +352,7 @@ function App() {
                     title: "100% Success Rate",
                     description: "Perfect code review approval rate"
                   }
-                ].map((achievement, index) => (
+                ].map((achievement) => (
                   <AnimatedSection key={achievement.title}>
                     <motion.div
                       className={`${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} p-6 rounded-lg backdrop-blur-sm`}
@@ -384,7 +384,7 @@ function App() {
                     description: "Responsive portfolio with GitHub API integration and 95+ accessibility score.",
                     tags: ["React", "JavaScript"]
                   }
-                ].map((project, index) => (
+                ].map((project) => (
                   <AnimatedSection key={project.title}>
                     <motion.div
                       className={`${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} rounded-lg overflow-hidden group`}
@@ -424,9 +424,6 @@ function App() {
                 ))}
               </div>
             </div>
-
-            {/* Blog Section */}
-            <BlogSection isDarkMode={isDarkMode} />
 
             {/* Contact Section */}
             <AnimatedSection id="contact" className="text-center">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Code2, Database, Server, Shield, Palette, Terminal } from 'lucide-react';
+import { Database, Server, Shield, Terminal } from 'lucide-react';
 
 interface Skill {
   name: string;
@@ -15,12 +15,6 @@ interface SkillsProgressProps {
 
 const SkillsProgress: React.FC<SkillsProgressProps> = ({ isDarkMode }) => {
   const skills: Skill[] = [
-    {
-      name: 'Frontend Development',
-      level: 90,
-      icon: <Code2 className="w-5 h-5" />,
-      color: 'blue'
-    },
     {
       name: 'Backend Development',
       level: 85,
@@ -38,12 +32,6 @@ const SkillsProgress: React.FC<SkillsProgressProps> = ({ isDarkMode }) => {
       level: 75,
       icon: <Shield className="w-5 h-5" />,
       color: 'red'
-    },
-    {
-      name: 'UI/UX Design',
-      level: 85,
-      icon: <Palette className="w-5 h-5" />,
-      color: 'pink'
     },
     {
       name: 'DevOps & Deployment',
