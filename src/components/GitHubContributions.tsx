@@ -22,6 +22,9 @@ interface GitHubContributionsProps {
   username: string;
 }
 
+const CACHE_KEY = 'github_contributions_cache';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+
 const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, username }) => {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -38,7 +41,22 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
   useEffect(() => {
     let isMounted = true;
 
-    const fetchGitHubData = async () => {
+    const fetchGitHubData = async (retryCount = 0) => {
+      // Check cache first
+      const cachedData = localStorage.getItem(CACHE_KEY);
+      if (cachedData) {
+        const { timestamp, data } = JSON.parse(cachedData);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          if (isMounted) {
+            setContributions(data.contributions);
+            setRepositories(data.repositories);
+            setStats(data.stats);
+            setIsLoading(false);
+          }
+          return;
+        }
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -50,13 +68,17 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
           })
         };
 
-        // Fetch repositories and events concurrently
         const [reposResponse, eventsResponse] = await Promise.all([
           fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=10`, { headers }),
           fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers })
         ]);
 
         if (!reposResponse.ok || !eventsResponse.ok) {
+          if (retryCount < 2) {
+            // Retry up to 2 times
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return fetchGitHubData(retryCount + 1);
+          }
           throw new Error('Failed to fetch GitHub data');
         }
 
@@ -140,6 +162,21 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
             repositories: reposData.length,
             maxContributions
           });
+
+          // Cache the results
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            data: {
+              contributions: contributionsArray,
+              repositories: topRepos,
+              stats: {
+                totalContributions,
+                streak: currentStreak,
+                repositories: reposData.length,
+                maxContributions
+              }
+            }
+          }));
         }
       } catch (err) {
         console.error('Error fetching GitHub data:', err);
@@ -161,21 +198,21 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
   const getContributionColor = useMemo(() => (count: number) => {
     const intensity = count / (stats.maxContributions || 1);
     if (isDarkMode) {
-      if (count === 0) return 'bg-gray-800';
-      if (intensity <= 0.25) return 'bg-green-900';
-      if (intensity <= 0.5) return 'bg-green-700';
-      if (intensity <= 0.75) return 'bg-green-500';
-      return 'bg-green-300';
+      if (count === 0) return 'bg-gray-800/80';
+      if (intensity <= 0.25) return 'bg-blue-900/80';
+      if (intensity <= 0.5) return 'bg-blue-700/80';
+      if (intensity <= 0.75) return 'bg-blue-500/80';
+      return 'bg-blue-300/80';
     }
-    if (count === 0) return 'bg-gray-100';
-    if (intensity <= 0.25) return 'bg-green-200';
-    if (intensity <= 0.5) return 'bg-green-400';
-    if (intensity <= 0.75) return 'bg-green-600';
-    return 'bg-green-800';
+    if (count === 0) return 'bg-gray-100/80';
+    if (intensity <= 0.25) return 'bg-blue-200/80';
+    if (intensity <= 0.5) return 'bg-blue-400/80';
+    if (intensity <= 0.75) return 'bg-blue-600/80';
+    return 'bg-blue-800/80';
   }, [isDarkMode, stats.maxContributions]);
 
   const LoadingSkeleton = () => (
-    <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} backdrop-blur-sm`} aria-busy="true">
+    <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} backdrop-blur-sm`} aria-busy="true">
       <div className="animate-pulse space-y-6">
         <div className="h-8 w-1/3 bg-gray-300 dark:bg-gray-700 rounded" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -185,8 +222,8 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
         </div>
         <div className="space-y-4">
           <div className="h-6 w-1/4 bg-gray-300 dark:bg-gray-700 rounded" />
-          <div className="grid grid-cols-53 gap-1">
-            {[...Array(371)].map((_, i) => (
+          <div className="grid grid-cols-[repeat(26,minmax(0,1fr))] sm:grid-cols-53 gap-1">
+            {[...Array(182)].map((_, i) => (
               <div key={i} className="w-3 h-3 bg-gray-300 dark:bg-gray-700 rounded-sm" />
             ))}
           </div>
@@ -204,17 +241,28 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
   if (isLoading) return <LoadingSkeleton />;
 
   if (error) {
+    function fetchGitHubData(): void {
+      throw new Error('Function not implemented.');
+    }
+
     return (
-      <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} backdrop-blur-sm`} role="alert">
+      <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} backdrop-blur-sm`} role="alert">
         <div className="text-red-500 flex items-center justify-center space-x-2">
           <span>{error}</span>
+          <button
+            onClick={() => fetchGitHubData()}
+            className={`px-3 py-1 rounded-md ${isDarkMode ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-600/20 text-blue-700'}`}
+            aria-label="Retry loading GitHub data"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} backdrop-blur-sm shadow-xl`} aria-label="GitHub Activity Section">
+    <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} backdrop-blur-sm shadow-xl`} aria-label="GitHub Activity Section">
       <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} tabIndex={0}>
         <Github className="w-6 h-6" />
         GitHub Activity
@@ -232,7 +280,7 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.2 }}
-            className={`p-4 rounded-lg shadow-sm ${isDarkMode ? 'bg-gray-700/40 hover:bg-gray-700/60' : 'bg-gray-200/90 hover:bg-gray-300/90'} transition-colors duration-200`}
+            className={`p-4 rounded-lg shadow-sm ${isDarkMode ? 'bg-gray-800/50 hover:bg-gray-800/70' : 'bg-gray-100/80 hover:bg-gray-200/80'} transition-colors duration-200`}
             tabIndex={0}
             aria-label={label}
           >
@@ -251,11 +299,11 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
           Contribution Activity
         </h3>
         <div className="overflow-x-auto pb-2">
-          <div className="inline-grid grid-cols-53 grid-rows-8 gap-1" style={{ minWidth: 220 }}>
+          <div className="inline-grid grid-cols-[repeat(26,minmax(0,1fr))] sm:grid-cols-53 grid-rows-8 gap-1" style={{ minWidth: 'auto' }}>
             {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((day, i) => (
               <div key={i} className={`w-3 h-3 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{day}</div>
             ))}
-            {contributions.map((day, index) => (
+            {contributions.slice(-182).map((day, index) => (
               <motion.div
                 key={day.date}
                 initial={{ scale: 0 }}
@@ -278,7 +326,7 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`absolute top-0 right-0 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg border ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}
+              className={`absolute top-0 right-0 p-4 rounded-lg ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} shadow-lg border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} z-10`}
             >
               <p className="text-sm font-semibold">{hoveredDate}</p>
               <p className="text-sm">{contributions.find(c => c.date === hoveredDate)?.count ?? 0} contributions</p>
@@ -327,7 +375,7 @@ const GitHubContributions: React.FC<GitHubContributionsProps> = ({ isDarkMode, u
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.2 }}
               className={`block p-4 rounded-lg border transition-colors duration-200 shadow-sm hover:shadow-md ${
-                isDarkMode ? 'bg-gray-700/30 hover:bg-gray-700/50 border-gray-600' : 'bg-gray-200/80 hover:bg-gray-300/80 border-gray-300'
+                isDarkMode ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700' : 'bg-gray-100/80 hover:bg-gray-200/80 border-gray-200'
               }`}
               tabIndex={0}
               aria-label={`Repository: ${repo.name}`}

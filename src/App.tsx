@@ -64,18 +64,20 @@ function App() {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('keydown', handleKeyDown);
     
+    // Apply dark mode class on mount
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeSection]);
+  }, [activeSection, isDarkMode]);
 
   const scrollToSection = useCallback((sectionId: string) => {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      // Add offset for the fixed header
-      const headerOffset = 80; // Height of the fixed header
+      const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -84,10 +86,8 @@ function App() {
         behavior: 'smooth'
       });
 
-      // Close mobile menu after navigation
       setIsMobileMenuOpen(false);
       
-      // Set focus after scrolling is complete
       setTimeout(() => {
         element.focus();
         element.setAttribute('tabindex', '-1');
@@ -101,7 +101,6 @@ function App() {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
   };
 
   return (
@@ -118,17 +117,16 @@ function App() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Helmet>
 
-      <Background3D isDarkMode={false} />
+      <Background3D isDarkMode={isDarkMode} />
 
       <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900/90 to-black/90' : 'bg-gradient-to-br from-gray-50 to-white'} text-${isDarkMode ? 'white' : 'gray-900'} relative`}>
         {/* Navigation */}
         <nav className={`fixed top-0 left-0 right-0 ${isDarkMode ? 'bg-gray-900/80' : 'bg-white/80'} backdrop-blur-sm z-50`}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              {/* Mobile menu button */}
               <button
                 onClick={toggleMobileMenu}
-                className={`md:hidden p-2 rounded-md ${isDarkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} focus:outline-none`}
+                className={`md:hidden p-2 rounded-md ${isDarkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 aria-label="Toggle menu"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -136,18 +134,16 @@ function App() {
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
 
-              {/* Theme Toggle */}
               <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-md ${isDarkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} focus:outline-none`}
+                className={`p-2 rounded-md ${isDarkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
               >
                 {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
               </button>
 
-              {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-8">
-                {['about', 'skills', 'projects', 'achievements', 'contact'].map((section) => (
+                {sections.map((section) => (
                   <motion.button
                     key={section}
                     onClick={() => scrollToSection(section)}
@@ -168,20 +164,19 @@ function App() {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
           <AnimatePresence>
             {isMobileMenuOpen && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className={`md:hidden fixed w-full ${isDarkMode ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-sm z-50`}
+                className={`md:hidden fixed w-full ${isDarkMode ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-sm z-40`}
                 id="mobile-menu"
                 role="navigation"
                 aria-label="Mobile menu"
               >
                 <div className="px-4 py-2 space-y-2">
-                  {['about', 'skills', 'projects', 'achievements', 'contact'].map((section) => (
+                  {sections.map((section) => (
                     <motion.button
                       key={section}
                       onClick={() => scrollToSection(section)}
@@ -189,7 +184,7 @@ function App() {
                         activeSection === section 
                           ? isDarkMode ? 'text-blue-400 bg-blue-400/10' : 'text-blue-600 bg-blue-600/10'
                           : isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                       whileTap={{ scale: 0.95 }}
                       aria-label={`Navigate to ${section} section`}
                       aria-current={activeSection === section ? 'page' : undefined}
@@ -203,7 +198,6 @@ function App() {
           </AnimatePresence>
         </nav>
 
-        {/* Hero Section */}
         <div 
           ref={heroRef}
           id="about" 
@@ -244,7 +238,7 @@ function App() {
                   href="https://github.com/Movineo" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110`}
+                  className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   aria-label="GitHub Profile"
                 >
                   <Github size={24} />
@@ -253,14 +247,14 @@ function App() {
                   href="https://www.linkedin.com/in/movine-odhiambo-5b4b5935a" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110`}
+                  className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   aria-label="LinkedIn Profile"
                 >
                   <Linkedin size={24} />
                 </a>
                 <a 
                   href="mailto:movineee@gmail.com" 
-                  className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110`}
+                  className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   aria-label="Email Contact"
                 >
                   <Mail size={24} />
@@ -268,9 +262,8 @@ function App() {
               </motion.div>
             </div>
 
-            {/* Education Section */}
             <AnimatedSection className="mb-20">
-              <div className={`${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} p-4 sm:p-8 rounded-lg backdrop-blur-sm`}>
+              <div className={`${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} p-4 sm:p-8 rounded-lg backdrop-blur-sm shadow-xl`}>
                 <div className="flex items-center mb-6">
                   <GraduationCap className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} mr-4`} />
                   <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Education</h2>
@@ -288,7 +281,6 @@ function App() {
               </div>
             </AnimatedSection>
 
-            {/* Skills Section */}
             <div id="skills" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-20">
               {[ 
                 {
@@ -309,7 +301,7 @@ function App() {
               ].map((skill) => (
                 <AnimatedSection key={skill.title}>
                   <motion.div
-                    className={`${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'} p-4 sm:p-6 rounded-lg backdrop-blur-sm hover:transform hover:-translate-y-2 transition-all`}
+                    className={`${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} p-4 sm:p-6 rounded-lg backdrop-blur-sm hover:transform hover:-translate-y-2 transition-all shadow-xl`}
                     whileHover={{ scale: 1.05 }}
                     tabIndex={0}
                     aria-label={skill.title + ' skills'}
@@ -327,12 +319,10 @@ function App() {
               <SkillsProgress isDarkMode={isDarkMode} />
             </div>
 
-            {/* GitHub Contributions Section */}
-            <div className="mb-20">
+            <div id="github" className="mb-20">
               <GitHubContributions isDarkMode={isDarkMode} username="Movineo" />
             </div>
 
-            {/* Achievements Section */}
             <div id="achievements" className="mb-20">
               <h2 className={`text-3xl font-bold mb-8 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Achievements</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -355,7 +345,7 @@ function App() {
                 ].map((achievement) => (
                   <AnimatedSection key={achievement.title}>
                     <motion.div
-                      className={`${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} p-6 rounded-lg backdrop-blur-sm`}
+                      className={`${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} p-6 rounded-lg backdrop-blur-sm shadow-xl`}
                       whileHover={{ scale: 1.05 }}
                     >
                       {achievement.icon}
@@ -367,7 +357,6 @@ function App() {
               </div>
             </div>
 
-            {/* Projects Section */}
             <div id="projects" className="mb-20">
               <h2 className={`text-3xl font-bold mb-12 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Featured Projects</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -387,7 +376,7 @@ function App() {
                 ].map((project) => (
                   <AnimatedSection key={project.title}>
                     <motion.div
-                      className={`${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-100/80'} rounded-lg overflow-hidden group`}
+                      className={`${isDarkMode ? 'bg-gray-900/30' : 'bg-white/80'} rounded-lg overflow-hidden group shadow-xl`}
                       whileHover={{ y: -8 }}
                       tabIndex={0}
                       role="article"
@@ -397,7 +386,7 @@ function App() {
                         <LazyImage
                           src={project.image}
                           alt={project.title}
-                          className="w-full h-48"
+                          className="w-full h-48 object-cover"
                         />
                         <div className={`absolute inset-0 bg-gradient-to-t ${
                           isDarkMode ? 'from-gray-900' : 'from-gray-800'
@@ -425,7 +414,6 @@ function App() {
               </div>
             </div>
 
-            {/* Contact Section */}
             <AnimatedSection id="contact" className="text-center">
               <h2 className={`text-3xl font-bold mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Let's Connect</h2>
               <ContactForm isDarkMode={isDarkMode} />
@@ -441,7 +429,6 @@ function App() {
           </AnimatedSection>
         </div>
 
-        {/* Chat Bot Component */}
         <ChatBot isDarkMode={isDarkMode} />
       </div>
     </>
