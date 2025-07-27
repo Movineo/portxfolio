@@ -250,7 +250,7 @@ function App() {
                   <Github size={24} />
                 </a>
                 <a 
-                  href="https://linkedin.com/in/movine-odhiambo" 
+                  href="https://www.linkedin.com/in/movine-odhiambo-5b4b5935a" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className={`hover:${isDarkMode ? 'text-blue-400' : 'text-blue-600'} transition-colors transform hover:scale-110`}
